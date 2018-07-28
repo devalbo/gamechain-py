@@ -1,9 +1,11 @@
 import requests
 import time
+from . import which_net
 
 
-def get_tx_testnet(txid):
-    url = f"https://test-bch-insight.bitpay.com/api/tx/{txid}"
+def get_tx(txid) -> str:
+    insight_url = which_net.get_bitpay_insight_api_url()
+    url = f"{insight_url}/tx/{txid}"
     while True:
         response = requests.get(url)
         if response.status_code == 200:
@@ -12,33 +14,10 @@ def get_tx_testnet(txid):
             time.sleep(0.3)
 
 
-def ensure_prefixed_address(addr):
-    if not addr.startswith("bchtest:"):
-        return f"bchtest:{addr}"
-
-    return addr
-
-
 def get_transaction_ids_for_address(addr):
-    # https://test-bch-insight.bitpay.com/api/addr/bchtest:qqngkfyr38e6gp8cmmzejfdc47h3ppum5qflqpr87y
-    # {
-    #     "addrStr": "qqngkfyr38e6gp8cmmzejfdc47h3ppum5qflqpr87y",
-    #     "balance": 0,
-    #     "balanceSat": 0,
-    #     "totalReceived": 0,
-    #     "totalReceivedSat": 0,
-    #     "totalSent": 0,
-    #     "totalSentSat": 0,
-    #     "unconfirmedBalance": 0,
-    #     "unconfirmedBalanceSat": 0,
-    #     "unconfirmedTxApperances": 0,
-    #     "txApperances": 1,
-    #     "transactions": [
-    #         "bd4282b683102bf0e2e4fb025d27c88511a3c7aab4c911d73e00ce9553e1ed01"
-    #     ]
-    # }
-    testnet_addr_url = "https://test-bch-insight.bitpay.com/api/addr/" + ensure_prefixed_address(addr)
-    addr_data = requests.get(testnet_addr_url).json()
+    insight_api_url = which_net.get_bitpay_insight_api_url()
+    addr_url = f"{insight_api_url}/addr/" + which_net.ensure_prefixed_address(addr)
+    addr_data = requests.get(addr_url).json()
     txids = addr_data["transactions"]
     return txids
 
@@ -61,6 +40,6 @@ def where(items, predicate):
 
 
 if __name__ == "__main__":
-    tx = get_tx_testnet("91955d1d228453fac7113850eeab48bf31350f5e0767a7d2357ca47af1836cde")
+    tx = get_tx("91955d1d228453fac7113850eeab48bf31350f5e0767a7d2357ca47af1836cde")
 
     print(tx)

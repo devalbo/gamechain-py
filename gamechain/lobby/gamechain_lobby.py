@@ -1,8 +1,8 @@
 import os
 import json
 from gamechain.lobby import gcl_message, gcl_message_builder, gcl_parser
-from gamechain.comm import gamechain_monitor, message_monitors
-from .. import utils
+from gamechain.comm import gamechain_monitor, message_monitors, gc_comm
+from .. import utils, which_net
 
 NEXT_TO_SPEND_TXID = "next_txid"
 
@@ -43,8 +43,8 @@ class GameChainLobbyClient:
     def look_for_game(self, gameshelf_id, label, initial_conditions):
         setup_info = f"{initial_conditions},{label}"
         lfg_message = gcl_message_builder.create_looking_for_game_message(self._private_key, setup_info)
-        tx_id = gcl_message.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
-                                         gameshelf_id, lfg_message)
+        tx_id = gc_comm.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
+                                     gameshelf_id, lfg_message)
 
         self._data[NEXT_TO_SPEND_TXID] = tx_id
         self._save_state()
@@ -59,10 +59,10 @@ class GameChainLobbyClient:
     def offer_willing_to_play(self, lfg_addr, lfg_txid_bytes, alternative_conditions):
         wtp_message = gcl_message_builder.create_willing_to_play_message(self._private_key, lfg_txid_bytes, alternative_conditions)
 
-        p_lfg_addr = utils.ensure_prefixed_address(lfg_addr)
+        p_lfg_addr = which_net.ensure_prefixed_address(lfg_addr)
 
-        tx_id = gcl_message.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
-                                         p_lfg_addr, wtp_message)
+        tx_id = gc_comm.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
+                                     p_lfg_addr, wtp_message)
 
         self._data[NEXT_TO_SPEND_TXID] = tx_id
         self._save_state()
@@ -88,10 +88,10 @@ class GameChainLobbyClient:
         accept_wtp_message_bytes = gcl_message_builder.create_accept_wtp_message(self._private_key, wtp_txid_bytes,
                                                                                  init_game_msg)
 
-        p_sender_addr = utils.ensure_prefixed_address(sender_addr)
+        p_sender_addr = which_net.ensure_prefixed_address(sender_addr)
 
-        tx_id = gcl_message.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
-                                         p_sender_addr, accept_wtp_message_bytes)
+        tx_id = gc_comm.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
+                                     p_sender_addr, accept_wtp_message_bytes)
 
         self._data[NEXT_TO_SPEND_TXID] = tx_id
         self._save_state()
@@ -99,12 +99,11 @@ class GameChainLobbyClient:
         return tx_id
 
     def reject_wtp(self, sender_addr, reject_msg):
-        # reject_wtp_message = self._create_reject_wtp(self._private_key.address)
         reject_wtp_msg_bytes = reject_msg.encode()
-        p_sender_addr = utils.ensure_prefixed_address(sender_addr)
+        p_sender_addr = which_net.ensure_prefixed_address(sender_addr)
 
-        tx_id = gcl_message.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
-                                         p_sender_addr, reject_wtp_msg_bytes)
+        tx_id = gc_comm.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
+                                     p_sender_addr, reject_wtp_msg_bytes)
 
         self._data[NEXT_TO_SPEND_TXID] = tx_id
         self._save_state()
@@ -112,10 +111,10 @@ class GameChainLobbyClient:
         return tx_id
 
     def send_gc_message(self, receiver_addr, msg_body):
-        p_receiver_addr = utils.ensure_prefixed_address(receiver_addr)
+        p_receiver_addr = which_net.ensure_prefixed_address(receiver_addr)
 
-        tx_id = gcl_message.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
-                                         p_receiver_addr, msg_body)
+        tx_id = gc_comm.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
+                                     p_receiver_addr, msg_body)
 
         self._data[NEXT_TO_SPEND_TXID] = tx_id
         self._save_state()

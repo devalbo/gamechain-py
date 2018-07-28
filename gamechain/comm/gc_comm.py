@@ -1,7 +1,7 @@
 import os, time, json
 from bitcash import transaction, network
 import cashaddress
-from .. import utils
+from .. import utils, which_net
 from . import gamechain_monitor
 
 GCL_PREFIX = 1337
@@ -105,7 +105,10 @@ def send_message(sender_key, spend_from_txid, receiver_addr, op_ret_data):
     tx_hex = transaction.create_p2pkh_transaction(sender_key, [unspent], outputs)
     tx_id = transaction.calc_txid(tx_hex)
 
-    network.NetworkAPI.broadcast_tx_testnet(tx_hex)
+    if which_net.is_testnet():
+        network.NetworkAPI.broadcast_tx_testnet(tx_hex)
+    else:
+        raise Exception("TX broadcasting only tested with testnet")
 
     return tx_id
 
@@ -117,7 +120,7 @@ def _parse_message_from_op_return_msg(op_return_msg):
 
 OP_RETURN_PREFIX = "6a"
 def get_sender_receiver_op_returns_by_txid(txid):
-    tx = utils.get_tx_testnet(txid)
+    tx = utils.get_tx(txid)
     vouts = tx["vout"]
     addr_vouts = [vout for vout in vouts if "addresses" in vout["scriptPubKey"].keys()]
     sender_addr = utils.ensure_prefixed_address(addr_vouts[0]["scriptPubKey"]["addresses"][0])

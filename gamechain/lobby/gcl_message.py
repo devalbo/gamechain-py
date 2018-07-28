@@ -87,41 +87,41 @@ def get_unspent_by_txid(sender_key, next_to_spend_txid):
             time.sleep(1)
 
 
-def send_message(sender_key, spend_from_txid, receiver_addr, op_ret_data):
-    # if len(op_ret_data) > MESSAGE_LIMIT:
-    #     print(op_ret_data)
-    #     raise Exception("Message is too long")
-
-    unspent = get_unspent_by_txid(sender_key, spend_from_txid)
-    print(unspent)
-
-    def chunk_data(data, size):
-        return (data[i:i + size] for i in range(0, len(data), size))
-
-    messages = []
-
-    if op_ret_data:
-        # message_chunks = chunk_data(op_ret_data.encode('utf-8'), MESSAGE_LIMIT)
-        message_chunks = chunk_data(op_ret_data, MESSAGE_LIMIT)
-
-        for message in message_chunks:
-            messages.append((message, None))
-
-    fee_amount = get_fee_amount(op_ret_data, len(messages))
-    amount_back_to_sender = unspent.amount - fee_amount - MESSAGE_AMOUNT
-    outputs = [
-        (sender_key.address, amount_back_to_sender),
-        (receiver_addr, MESSAGE_AMOUNT),
-    ]
-
-    outputs.extend(messages)
-
-    tx_hex = transaction.create_p2pkh_transaction(sender_key, [unspent], outputs)
-    tx_id = transaction.calc_txid(tx_hex)
-
-    network.NetworkAPI.broadcast_tx_testnet(tx_hex)
-
-    return tx_id
+# def send_message(sender_key, spend_from_txid, receiver_addr, op_ret_data):
+#     # if len(op_ret_data) > MESSAGE_LIMIT:
+#     #     print(op_ret_data)
+#     #     raise Exception("Message is too long")
+#
+#     unspent = get_unspent_by_txid(sender_key, spend_from_txid)
+#     print(unspent)
+#
+#     def chunk_data(data, size):
+#         return (data[i:i + size] for i in range(0, len(data), size))
+#
+#     messages = []
+#
+#     if op_ret_data:
+#         # message_chunks = chunk_data(op_ret_data.encode('utf-8'), MESSAGE_LIMIT)
+#         message_chunks = chunk_data(op_ret_data, MESSAGE_LIMIT)
+#
+#         for message in message_chunks:
+#             messages.append((message, None))
+#
+#     fee_amount = get_fee_amount(op_ret_data, len(messages))
+#     amount_back_to_sender = unspent.amount - fee_amount - MESSAGE_AMOUNT
+#     outputs = [
+#         (sender_key.address, amount_back_to_sender),
+#         (receiver_addr, MESSAGE_AMOUNT),
+#     ]
+#
+#     outputs.extend(messages)
+#
+#     tx_hex = transaction.create_p2pkh_transaction(sender_key, [unspent], outputs)
+#     tx_id = transaction.calc_txid(tx_hex)
+#
+#     network.NetworkAPI.broadcast_tx_testnet(tx_hex)
+#
+#     return tx_id
 
 
 def _parse_message_from_op_return_msg(op_return_msg):
@@ -129,30 +129,6 @@ def _parse_message_from_op_return_msg(op_return_msg):
 
     return msg_bytes
 
-
-# #OP_RETURN_PREFIX = "OP_RETURN "
-# OP_RETURN_PREFIX = "6a"
-# # OP_RETURN_AND_SIZE_BYTES_COUNT = 4
-# def receive_message_by_txid(txid, sender_public_key=None) -> GclMessage:
-#     tx = utils.get_tx_testnet(txid)
-#     vouts = tx["vout"]
-#     addr_vouts = [vout for vout in vouts if "addresses" in vout["scriptPubKey"].keys()]
-#     sender_addr = addr_vouts[0]["scriptPubKey"]["addresses"][0]
-#     receiver_addr = addr_vouts[1]["scriptPubKey"]["addresses"][0]
-#     # op_return_msg = next(vout["scriptPubKey"]["hex"][OP_RETURN_AND_SIZE_BYTES_COUNT:] for vout in vouts if vout["scriptPubKey"]["asm"].startswith(OP_RETURN_PREFIX))
-#     # op_return_asm = next(vout["scriptPubKey"]["asm"][2:] for vout in vouts if
-#     #                      vout["scriptPubKey"]["asm"].startswith(OP_RETURN_PREFIX))
-#     op_return_asms = [vout["scriptPubKey"]["hex"][2:] for vout in vouts if
-#                       vout["scriptPubKey"]["hex"].startswith(OP_RETURN_PREFIX)]
-#     op_return_asm = op_return_asms[0]
-#     msg_bytes = bytes.fromhex(op_return_asm)
-#
-#     # msg_bytes = _parse_message_from_op_return_msg(op_return_msg)
-#     print(f"TX_ID: {txid}")
-#     print(f"MSG_ASM: {op_return_asm}")
-#     msg_type, msg_contents = gcl_parser.parse_op_return(msg_bytes, sender_public_key)
-#
-#     return GclMessage(txid, sender_addr, receiver_addr, msg_type, msg_contents)
 
 # TURN_PREFIX = "OP_RETURN "
 # OP_RETURN_PREFIX = "6a"
