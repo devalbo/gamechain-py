@@ -70,14 +70,6 @@ class MsgRej:
         self.msg_data = msg_data
 
 
-# def get_fee_amount(op_return_data, msg_count=0):
-#     op_return_fee_multiplier = 1
-#     if msg_count > 1:
-#         op_return_fee_multiplier = 3
-#
-#     return FEE_AMOUNT + (op_return_fee_multiplier * len(op_return_data))
-
-
 def get_unspent_by_txid(sender_key, next_to_spend_txid):
     next_tx_found = False
     while not next_tx_found:

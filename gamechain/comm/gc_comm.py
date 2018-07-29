@@ -112,10 +112,6 @@ def rx_join_op_returns(op_return_asms, lokad_prefix):
     return op_return_asm_bytes
 
 
-# def get_fee_amount(op_return_data):
-#     return FEE_AMOUNT + len(op_return_data)
-
-
 def get_fee_amount(op_return_data, msg_count=0):
     op_return_fee_multiplier = 1
     if msg_count > 1:
@@ -148,11 +144,8 @@ def send_message(sender_key: GcPrivateKey, spend_from_txid, receiver_addr, op_re
     if op_ret_data:
         message_chunks = chunk_data(op_ret_data, MESSAGE_LIMIT)
 
-        first_message = None
         for message in message_chunks:
-            # if first_message is None:
-            #     first_message = message
-                messages.append((message, None))
+            messages.append((message, None))
 
     fee_amount = get_fee_amount(op_ret_data, len(messages))
     amount_back_to_sender = unspent.amount - fee_amount - MESSAGE_AMOUNT
