@@ -16,7 +16,7 @@ def get_tx(txid) -> str:
 
 def get_transaction_ids_for_address(addr):
     insight_api_url = which_net.get_bitpay_insight_api_url()
-    addr_url = f"{insight_api_url}/addr/" + which_net.ensure_prefixed_address(addr)
+    addr_url = f"{insight_api_url}/addr/" + which_net.ensure_prefixed_address_str(addr)
     addr_data = requests.get(addr_url).json()
     txids = addr_data["transactions"]
     return txids

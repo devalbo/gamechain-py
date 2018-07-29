@@ -1,15 +1,16 @@
 import os
 import json
-from gamechain.lobby import gcl_message, gcl_message_builder, gcl_parser
+from gamechain.gc_types import GcPrivateKey
+from gamechain.lobby import gcl_message_builder
 from gamechain.comm import gamechain_monitor, message_monitors, gc_comm
-from .. import utils, which_net
+from .. import which_net
 
 NEXT_TO_SPEND_TXID = "next_txid"
 
 
 class GameChainLobbyClient:
 
-    def __init__(self, private_key, save_file):
+    def __init__(self, private_key: GcPrivateKey, save_file):
         self._private_key = private_key
         self._save_file = save_file
 
@@ -59,7 +60,7 @@ class GameChainLobbyClient:
     def offer_willing_to_play(self, lfg_addr, lfg_txid_bytes, alternative_conditions):
         wtp_message = gcl_message_builder.create_willing_to_play_message(self._private_key, lfg_txid_bytes, alternative_conditions)
 
-        p_lfg_addr = which_net.ensure_prefixed_address(lfg_addr)
+        p_lfg_addr = which_net.ensure_prefixed_address_str(lfg_addr)
 
         tx_id = gc_comm.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
                                      p_lfg_addr, wtp_message)
@@ -88,7 +89,7 @@ class GameChainLobbyClient:
         accept_wtp_message_bytes = gcl_message_builder.create_accept_wtp_message(self._private_key, wtp_txid_bytes,
                                                                                  init_game_msg)
 
-        p_sender_addr = which_net.ensure_prefixed_address(sender_addr)
+        p_sender_addr = which_net.ensure_prefixed_address_str(sender_addr)
 
         tx_id = gc_comm.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
                                      p_sender_addr, accept_wtp_message_bytes)
@@ -100,7 +101,7 @@ class GameChainLobbyClient:
 
     def reject_wtp(self, sender_addr, reject_msg):
         reject_wtp_msg_bytes = reject_msg.encode()
-        p_sender_addr = which_net.ensure_prefixed_address(sender_addr)
+        p_sender_addr = which_net.ensure_prefixed_address_str(sender_addr)
 
         tx_id = gc_comm.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
                                      p_sender_addr, reject_wtp_msg_bytes)
@@ -111,7 +112,7 @@ class GameChainLobbyClient:
         return tx_id
 
     def send_gc_message(self, receiver_addr, msg_body):
-        p_receiver_addr = which_net.ensure_prefixed_address(receiver_addr)
+        p_receiver_addr = which_net.ensure_prefixed_address_str(receiver_addr)
 
         tx_id = gc_comm.send_message(self._private_key, self._data[NEXT_TO_SPEND_TXID],
                                      p_receiver_addr, msg_body)

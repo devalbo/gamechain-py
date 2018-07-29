@@ -1,3 +1,4 @@
+from gamechain.gc_types import GcPrivateKey
 from . import gcl_message
 
 
@@ -13,7 +14,7 @@ def _get_version_bytes():
     return 0x01.to_bytes(1, 'big')
 
 
-def create_looking_for_game_message(sender_key, setup_info):
+def create_looking_for_game_message(sender_key: GcPrivateKey, setup_info):
     lfg_msg_bytes = gcl_message.MSG_LFG.to_bytes(1, 'big')
     if len(sender_key.public_key) != 33:
         raise Exception("public_key_bytes must be 33 bytes long")
@@ -47,7 +48,7 @@ def create_looking_for_game_message(sender_key, setup_info):
     return message
 
 
-def create_willing_to_play_message(sender_key, lfg_txid_bytes, setup_response):
+def create_willing_to_play_message(sender_key: GcPrivateKey, lfg_txid_bytes, setup_response):
     wtp_msg_bytes = gcl_message.MSG_WTP.to_bytes(1, 'big')
     if len(lfg_txid_bytes) != 32:
         raise Exception("lfg_txid must be 32 bytes long")
@@ -83,7 +84,7 @@ def create_willing_to_play_message(sender_key, lfg_txid_bytes, setup_response):
     return message
 
 
-def create_accept_wtp_message(sender_key, wtp_txid_bytes, final_setup_info):
+def create_accept_wtp_message(sender_key: GcPrivateKey, wtp_txid_bytes, final_setup_info):
     acc_msg_bytes = gcl_message.MSG_ACC.to_bytes(1, 'big')
     if len(wtp_txid_bytes) != 32:
         raise Exception("wtp_txid must be 32 bytes long")
@@ -118,7 +119,7 @@ def create_accept_wtp_message(sender_key, wtp_txid_bytes, final_setup_info):
     return message
 
 
-def create_reject_wtp_message(sender_key, wtp_txid_bytes, rejection_msg):
+def create_reject_wtp_message(sender_key: GcPrivateKey, wtp_txid_bytes, rejection_msg):
     rej_msg_bytes = gcl_message.MSG_REJ.to_bytes(1, 'big')
     if len(wtp_txid_bytes) != 32:
         raise Exception("wtp_txid must be 32 bytes long")
@@ -153,7 +154,7 @@ def create_reject_wtp_message(sender_key, wtp_txid_bytes, rejection_msg):
     return message
 
 
-def create_cancel_lfg_message(sender_key, lfg_txid_bytes, cancel_msg):
+def create_cancel_lfg_message(sender_key: GcPrivateKey, lfg_txid_bytes, cancel_msg):
     can_msg_bytes = gcl_message.MSG_CAN.to_bytes(1, 'big')
     if len(lfg_txid_bytes) != 32:
         raise Exception("lfg_txid must be 32 bytes long")

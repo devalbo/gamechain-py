@@ -2,25 +2,27 @@ from bitcash import format
 from gamechain.lobby import gcl_message
 
 
+OP_RETURN_PREFIX_BYTES = 0x6A
+
+
 def parse_op_push_data(push_data_bytes):
     if push_data_bytes[0] == gcl_message.OP_PUSHDATA:
         size = push_data_bytes[1]
         return push_data_bytes[2:2+size+1]
 
 
-OP_RETURN_PREFIX_BYTES = 0x6A
-def parse_op_return(op_return_bytes, sender_public_key=None):
-    # pull out GCL prefix
-    if op_return_bytes[0] == OP_RETURN_PREFIX_BYTES and \
-       op_return_bytes[1] == 0x04 and \
-       op_return_bytes[2] == 0x00 and \
-       op_return_bytes[3] == 0x00 and \
-       op_return_bytes[4] == 0x13 and \
-       op_return_bytes[5] == 0x37:
-        op_push_data = parse_op_push_data(op_return_bytes[6:])
-        return parse_gcl_message(op_push_data, sender_public_key)
-
-    return None
+# def parse_op_return(op_return_bytes, sender_public_key=None):
+#     # pull out GCL prefix
+#     if op_return_bytes[0] == OP_RETURN_PREFIX_BYTES and \
+#        op_return_bytes[1] == 0x04 and \
+#        op_return_bytes[2] == 0x00 and \
+#        op_return_bytes[3] == 0x00 and \
+#        op_return_bytes[4] == 0x13 and \
+#        op_return_bytes[5] == 0x37:
+#         op_push_data = parse_op_push_data(op_return_bytes[6:])
+#         return parse_gcl_message(op_push_data, sender_public_key)
+#
+#     return None
 
 
 def parse_lfg(msg_payload):
@@ -108,7 +110,7 @@ def parse_can(msg_payload, sender_public_key_bytes):
     valid = format.verify_sig(signed_txid, txid_bytes, sender_public_key_bytes)
     if valid:
         msg_data_str = msg_data.decode()
-        msg_can = gcl_message.MsgCan(msg_data_str)
+        msg_can = gcl_message.MsgCan(txid_bytes, msg_data_str)
         return gcl_message.MSG_CAN, msg_can
 
     return None

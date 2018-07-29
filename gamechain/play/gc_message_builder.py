@@ -1,4 +1,5 @@
 import json
+from gamechain.comm import gc_comm
 from gamechain.play import gc_message
 
 
@@ -7,7 +8,7 @@ def _get_prefix_bytes():
 
 
 def _get_op_pushdata_bytes(message_body_len):
-    return gc_message.OP_PUSHDATA2.to_bytes(1, 'big') + message_body_len.to_bytes(2, 'big')
+    return gc_comm.OP_PUSHDATA2.to_bytes(1, 'big') + message_body_len.to_bytes(2, 'big')
 
 
 def _get_version_bytes():

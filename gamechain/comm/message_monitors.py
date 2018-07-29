@@ -1,5 +1,5 @@
 import asyncio
-from gamechain.lobby import game_shelves, gcl_message
+from gamechain.lobby import gcl_message
 
 MONITOR_INTERVAL = 0.2
 

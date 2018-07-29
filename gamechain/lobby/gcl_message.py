@@ -5,6 +5,7 @@ import cashaddress
 from .. import utils
 from . import gcl_parser
 from gamechain.comm import gc_comm
+from gamechain import which_net
 
 GCL_PREFIX = 1337
 GC_PREFIX = 31337
@@ -22,12 +23,14 @@ MESSAGE_LIMIT = 220  # 100
 
 OP_PUSHDATA = 0x4C
 
+GCL_LOKAD_PREFIX = [0x00, 0x00, 0x13, 0x37]
+
 
 class GclMessage:
     def __init__(self, txid, sender_addr, receiver_addr, msg_type, msg):
         self.txid = txid
-        self.sender_addr = utils.ensure_prefixed_address(sender_addr)
-        self.receiver_addr = utils.ensure_prefixed_address(receiver_addr)
+        self.sender_addr = which_net.ensure_prefixed_address_str(sender_addr)
+        self.receiver_addr = which_net.ensure_prefixed_address_str(receiver_addr)
         self.msg_type = msg_type
         self.msg = msg
 
@@ -62,16 +65,17 @@ class MsgCan:
 
 
 class MsgRej:
-    def __init__(self, msg_data):
+    def __init__(self, wtp_txid_bytes, msg_data):
+        self.wtp_txid_bytes = wtp_txid_bytes
         self.msg_data = msg_data
 
 
-def get_fee_amount(op_return_data, msg_count=0):
-    op_return_fee_multiplier = 1
-    if msg_count > 1:
-        op_return_fee_multiplier = 3
-
-    return FEE_AMOUNT + (op_return_fee_multiplier * len(op_return_data))
+# def get_fee_amount(op_return_data, msg_count=0):
+#     op_return_fee_multiplier = 1
+#     if msg_count > 1:
+#         op_return_fee_multiplier = 3
+#
+#     return FEE_AMOUNT + (op_return_fee_multiplier * len(op_return_data))
 
 
 def get_unspent_by_txid(sender_key, next_to_spend_txid):
@@ -87,59 +91,19 @@ def get_unspent_by_txid(sender_key, next_to_spend_txid):
             time.sleep(1)
 
 
-# def send_message(sender_key, spend_from_txid, receiver_addr, op_ret_data):
-#     # if len(op_ret_data) > MESSAGE_LIMIT:
-#     #     print(op_ret_data)
-#     #     raise Exception("Message is too long")
-#
-#     unspent = get_unspent_by_txid(sender_key, spend_from_txid)
-#     print(unspent)
-#
-#     def chunk_data(data, size):
-#         return (data[i:i + size] for i in range(0, len(data), size))
-#
-#     messages = []
-#
-#     if op_ret_data:
-#         # message_chunks = chunk_data(op_ret_data.encode('utf-8'), MESSAGE_LIMIT)
-#         message_chunks = chunk_data(op_ret_data, MESSAGE_LIMIT)
-#
-#         for message in message_chunks:
-#             messages.append((message, None))
-#
-#     fee_amount = get_fee_amount(op_ret_data, len(messages))
-#     amount_back_to_sender = unspent.amount - fee_amount - MESSAGE_AMOUNT
-#     outputs = [
-#         (sender_key.address, amount_back_to_sender),
-#         (receiver_addr, MESSAGE_AMOUNT),
-#     ]
-#
-#     outputs.extend(messages)
-#
-#     tx_hex = transaction.create_p2pkh_transaction(sender_key, [unspent], outputs)
-#     tx_id = transaction.calc_txid(tx_hex)
-#
-#     network.NetworkAPI.broadcast_tx_testnet(tx_hex)
-#
-#     return tx_id
-
-
-def _parse_message_from_op_return_msg(op_return_msg):
-    msg_bytes = bytes.fromhex(op_return_msg)
-
-    return msg_bytes
-
-
-# TURN_PREFIX = "OP_RETURN "
-# OP_RETURN_PREFIX = "6a"
-# OP_RETURN_AND_SIZE_BYTES_COUNT = 4
 def receive_message_by_txid(txid, sender_public_key=None) -> GclMessage:
     sender_addr, receiver_addr, op_return_asms = gc_comm.get_sender_receiver_op_returns_by_txid(txid)
-    op_return_asm_bytes = op_return_asms[0]
+    op_return_gcl_asm_bytes = gc_comm.rx_join_op_returns(op_return_asms, GCL_LOKAD_PREFIX)
+    if op_return_gcl_asm_bytes is None:
+        print(f"NO GC MESSAGE TO RECEIVE IN TX {txid}")
+        return None
+
+    # op_return_asm_bytes = op_return_asms[0]
 
     print(f"TX_ID: {txid}")
-    print(f"MSG_ASM: {op_return_asm_bytes}")
-    msg_type, msg_contents = gcl_parser.parse_op_return(op_return_asm_bytes, sender_public_key)
+    print(f"MSG_ASM: {op_return_gcl_asm_bytes}")
+    # msg_type, msg_contents = gcl_parser.parse_op_return(op_return_gc_asm_bytes, sender_public_key)
+    msg_type, msg_contents = gcl_parser.parse_gcl_message(op_return_gcl_asm_bytes, sender_public_key)
 
     return GclMessage(txid, sender_addr, receiver_addr, msg_type, msg_contents)
 
@@ -151,7 +115,7 @@ def check_if_message_is_for_addr(tx, addr):
 
     receiver_addr = next(iter(vouts[1].keys()))
     receiver_addr = cashaddress.convert.to_cash_address(receiver_addr)
-    receiver_addr = utils.ensure_prefixed_address(receiver_addr)
+    receiver_addr = which_net.ensure_prefixed_address_str(receiver_addr)
 
     return receiver_addr == addr
 

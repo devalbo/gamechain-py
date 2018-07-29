@@ -1,5 +1,5 @@
 
-_use_testnet = True
+_use_testnet: bool = True
 
 
 def set_use_mainnet(use_it: bool):
@@ -11,14 +11,14 @@ def is_testnet() -> bool:
     return _use_testnet
 
 
-def get_bitpay_insight_api_url():
+def get_bitpay_insight_api_url() -> str:
     if _use_testnet:
         return f"https://test-bch-insight.bitpay.com/api"
 
     raise Exception("Insight API only tested/available with testnet")
 
 
-def ensure_prefixed_address(addr) -> str:
+def ensure_prefixed_address_str(addr: str) -> str:
     if is_testnet():
         if not addr.startswith("bchtest:"):
             return f"bchtest:{addr}"
