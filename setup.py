@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gamechain",
-    version="0.0.2.9",
+    version="0.0.3.0",
     author="Albert Boehmler",
     author_email="ajboehmler@gmail.com",
     description="Protocol for playing, recording, and watching games on the BCH blockchain",
