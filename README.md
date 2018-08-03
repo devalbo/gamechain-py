@@ -3,3 +3,6 @@ This library is a Python implementation of the GameChainLobby and GameChain mult
 
 GameChainLobby and GameChain protocol specifications [are available here](https://github.com/devalbo/gamechain-specs).
 
+Examples of Python usage of this library is [available here](https://github.com/devalbo/gamechain-py-examples).
+
+This library uses a [modified version of the bitcash library](https://github.com/devalbo/bitcash).
